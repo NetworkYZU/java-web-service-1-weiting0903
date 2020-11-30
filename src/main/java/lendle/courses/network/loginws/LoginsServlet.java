@@ -5,12 +5,17 @@
  */
 package lendle.courses.network.loginws;
 
+import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -70,7 +75,23 @@ public class LoginsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        service1(request, response);
+//        service1(request, response);
+        response.setContentType("application/json;charset=utf-8");
+        try(PrintWriter out=response.getWriter();Connection conn=DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app")){
+            Statement stmt=conn.createStatement();
+            ResultSet rs=stmt.executeQuery("select*from LOGIN");
+            List ret=new ArrayList();
+            while(rs.next()){
+                Map map=new HashMap();
+                map.put("id",rs.getString("id"));
+                map.put("password",rs.getString("password"));
+                ret.add(map);
+            }
+            Gson gson=new Gson();
+            out.print(gson.toJson(ret));
+        }catch(Exception e){
+            throw new ServletException(e);
+        }
     }
 
 }
